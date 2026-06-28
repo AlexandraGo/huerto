@@ -3,10 +3,12 @@
   "short_name": "Huerto",
   "description": "Seguimiento de siembras y cosechas",
   "start_url": "./huerto.html",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#f5f0e6",
   "theme_color": "#5c3d1e",
-  "orientation": "portrait",
+  "orientation": "portrait-primary",
+  "lang": "es",
   "icons": [
     {
       "src": "icon-192.png",

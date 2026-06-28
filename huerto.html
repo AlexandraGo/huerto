@@ -37,7 +37,8 @@ body { font-family: 'Source Sans 3', Georgia, sans-serif; background: var(--crea
 .app-shell { display: flex; min-height: 100vh; }
 
 /* ── SIDEBAR ── */
-.sidebar { width: 200px; background: var(--brown); border-right: 3px solid var(--brown-lt); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 200; transition: transform 0.25s ease; }
+.sidebar { width: 200px; background: var(--brown); border-right: 3px solid var(--brown-lt); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 200; transition: transform 0.25s ease; pointer-events: auto; }
+.sidebar.open { pointer-events: auto; }
 .sidebar .sb-logo { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
 .sidebar .sb-logo h1 { font-family: 'Lora', Georgia, serif; font-size: 1.1rem; font-weight: 700; color: var(--cream); }
 .sidebar .sb-logo p { font-size: 0.68rem; color: var(--brown-xs); margin-top: 2px; font-style: italic; }
@@ -69,8 +70,8 @@ main { margin-left: 200px; padding: 24px 20px; max-width: 760px; }
 
 /* ── MOBILE ── */
 @media (max-width: 640px) {
-  .sidebar { transform: translateX(-100%); }
-  .sidebar.open { transform: translateX(0); }
+  .sidebar { transform: translateX(-100%); pointer-events: none; }
+  .sidebar.open { transform: translateX(0); pointer-events: auto; }
   .menu-toggle { display: flex; align-items: center; justify-content: center; }
   .mobile-topbar { display: flex; }
   main { margin-left: 0; padding: 14px 14px 30px; padding-top: 62px; }

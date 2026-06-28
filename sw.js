@@ -1,4 +1,4 @@
-const CACHE = 'huerto-v2';
+const CACHE = 'huerto-v3';
 const FILES = [
   '/huerto/huerto.html',
   '/huerto/manifest.json',
@@ -23,9 +23,8 @@ self.addEventListener('activate', e => {
 });
 
 self.addEventListener('fetch', e => {
+  // Network first — always get latest, fall back to cache
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      return cached || fetch(e.request).catch(() => caches.match('/huerto/huerto.html'));
-    })
+    fetch(e.request).catch(() => caches.match(e.request))
   );
 });

@@ -478,6 +478,16 @@ let plantas  = loadData('plantas',  DATOS_INICIALES.plantas);
 let recogidas= loadData('recogidas',DATOS_INICIALES.recogidas);
 
 // ===================== NAV =====================
+function toggleMenu() {
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
+}
+function closeMenu() {
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('overlay');
+  if(sb) sb.classList.remove('open');
+  if(ov) ov.classList.remove('open');
+}
 function showSection(id, btn) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));

@@ -54,7 +54,12 @@ body { font-family: 'Source Sans 3', Georgia, sans-serif; background: var(--crea
 .sidebar .sb-date { padding: 0 18px 16px; font-size: 0.68rem; color: var(--brown-xs); font-style: italic; }
 
 /* ── MOBILE TOGGLE ── */
-.menu-toggle { display: none; position: fixed; top: 14px; left: 14px; z-index: 300; background: var(--brown); border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 1.1rem; color: var(--cream); box-shadow: var(--shadow); }
+.menu-toggle { display: none; position: fixed; top: 12px; left: 12px; z-index: 9999; background: var(--brown); border: none; border-radius: 8px; padding: 12px 14px; cursor: pointer; font-size: 1.3rem; color: var(--cream); box-shadow: 0 2px 10px rgba(0,0,0,0.3); min-width: 48px; min-height: 48px; }
+
+/* ── MOBILE TOP BAR ── */
+.mobile-topbar { display: none; position: fixed; top: 0; left: 0; right: 0; z-index: 500; background: var(--brown); border-bottom: 2px solid var(--brown-lt); padding: 0 12px; height: 52px; align-items: center; justify-content: space-between; }
+.mobile-topbar h1 { font-family: 'Lora', serif; font-size: 1rem; color: var(--cream); font-weight: 700; margin-left: 48px; }
+.mobile-topbar select { background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: var(--cream); padding: 5px 10px; border-radius: 4px; font-size: 0.82rem; font-family: 'Source Sans 3', sans-serif; -webkit-appearance: none; }
 .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 190; }
 .overlay.open { display: block; }
 
@@ -66,8 +71,9 @@ main { margin-left: 200px; padding: 24px 20px; max-width: 760px; }
 @media (max-width: 640px) {
   .sidebar { transform: translateX(-100%); }
   .sidebar.open { transform: translateX(0); }
-  .menu-toggle { display: block; }
-  main { margin-left: 0; padding: 14px 14px 30px; padding-top: 56px; }
+  .menu-toggle { display: flex; align-items: center; justify-content: center; }
+  .mobile-topbar { display: flex; }
+  main { margin-left: 0; padding: 14px 14px 30px; padding-top: 62px; }
   header { display: none; }
 }
 
@@ -142,6 +148,17 @@ tr:hover td { background: var(--cream-dk); }
 <body>
 <button class="menu-toggle" onclick="toggleMenu()" id="menu-btn">☰</button>
 <div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<div class="mobile-topbar">
+  <h1>🌱 Mi Huerto</h1>
+  <select onchange="document.getElementById('filter-resumen-año').value=this.value; renderResumen();renderSemillas();renderPlantas();renderRecogidas();renderTotales();">
+    <option value="">All years</option>
+    <option>2024</option>
+    <option>2025</option>
+    <option selected>2026</option>
+    <option>2027</option>
+  </select>
+</div>
 
 <div class="sidebar" id="sidebar">
   <div class="sb-logo">

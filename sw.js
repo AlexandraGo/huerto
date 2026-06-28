@@ -1,8 +1,9 @@
-const CACHE = 'huerto-v1';
+const CACHE = 'huerto-v2';
 const FILES = [
-  './huerto.html',
-  './manifest.json',
-  'https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap'
+  '/huerto/huerto.html',
+  '/huerto/manifest.json',
+  '/huerto/icon-192.png',
+  '/huerto/icon-512.png'
 ];
 
 self.addEventListener('install', e => {
@@ -23,6 +24,8 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request).catch(() => caches.match('./huerto.html')))
+    caches.match(e.request).then(cached => {
+      return cached || fetch(e.request).catch(() => caches.match('/huerto/huerto.html'));
+    })
   );
 });

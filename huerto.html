@@ -631,19 +631,23 @@ function renderSemillas() {
   let data = semillas.filter(s => (!añoF||s.año===añoF) && (!plantaF||s.planta.toLowerCase().includes(plantaF)));
   const el = document.getElementById('tabla-semillas');
   if(!data.length) { el.innerHTML = '<div class="empty">No hay registros</div>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>🌱 Siembra</th><th>🔄 Trasplante</th><th>Notas</th><th></th></tr></thead><tbody>
-    ${data.map(s=>`<tr>
-      <td><strong>${s.planta}</strong></td>
-      <td><span class="tag tag-${s.año}">${s.año}</span></td>
-      <td>${fmt(s.fecha)}</td>
-      <td>${fmt(s.fechaTrasplante||'')}</td>
-      <td style="color:#74b994;font-size:0.8rem">${s.notas||'—'}</td>
-      <td style="white-space:nowrap">
-        <button class="del-btn" onclick="editSemilla('${s.id}')" title="Editar">✏️</button>
-        <button class="del-btn" onclick="delSemilla('${s.id}')" title="Eliminar">🗑</button>
-      </td>
-    </tr>`).join('')}
-  </tbody></table>`;
+  el.innerHTML = data.map(s=>`
+    <div style="padding:11px 0;border-bottom:1px dashed var(--border-lt);display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:0.9rem">${s.planta}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">
+          🌱 ${fmt(s.fecha)}${s.fechaTrasplante?` &nbsp;🔄 ${fmt(s.fechaTrasplante)}`:''}
+        </div>
+        ${s.notas?`<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-style:italic">${s.notas}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <span class="tag tag-${s.año}">${s.año}</span>
+        <div style="display:flex;gap:2px">
+          <button class="del-btn" onclick="editSemilla('${s.id}')" title="Editar">✏️</button>
+          <button class="del-btn" onclick="delSemilla('${s.id}')" title="Eliminar">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
 // ===================== PLANTAS =====================
@@ -693,9 +697,23 @@ function renderPlantas() {
   const el = document.getElementById('tabla-plantas');
   if(!data.length) { el.innerHTML = '<div class="empty">No hay registros</div>'; return; }
   const tipoLabel = {semilla:'🌱',planta:'🪴',trasplante:'🔄'};
-  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>Siembra</th><th>Rec. est.</th><th>Tipo</th><th></th></tr></thead><tbody>
-    ${data.map(p=>`<tr><td><strong>${p.planta}</strong>${p.notas?`<br><span style="font-size:0.75rem;color:var(--muted)">${p.notas}</span>`:''}</td><td><span class="tag tag-${p.año}">${p.año}</span></td><td>${fmt(p.fecha)}</td><td>${p.fechaRec ? `${fmt(p.fechaRec)}${p.fechaRecAuto?` <span style="font-size:0.65rem;color:var(--muted);font-style:italic">est.</span>`:''}` : '—'}</td><td>${tipoLabel[p.tipo]||'🪴'}</td><td style="white-space:nowrap"><button class="del-btn" onclick="editPlanta('${p.id}')" title="Editar">✏️</button><button class="del-btn" onclick="delPlanta('${p.id}')" title="Eliminar">🗑</button></td></tr>`).join('')}
-  </tbody></table>`;
+  el.innerHTML = data.map(p=>`
+    <div style="padding:11px 0;border-bottom:1px dashed var(--border-lt);display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:0.9rem">${tipoLabel[p.tipo]||'🪴'} ${p.planta}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">
+          Siembra: ${fmt(p.fecha)}${p.fechaRec?` · Rec: ${fmt(p.fechaRec)}${p.fechaRecAuto?' <span style="font-size:0.65rem;font-style:italic">est.</span>':''}` :''}
+        </div>
+        ${p.notas?`<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-style:italic">${p.notas}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <span class="tag tag-${p.año}">${p.año}</span>
+        <div style="display:flex;gap:2px">
+          <button class="del-btn" onclick="editPlanta('${p.id}')" title="Editar">✏️</button>
+          <button class="del-btn" onclick="delPlanta('${p.id}')" title="Eliminar">🗑</button>
+        </div>
+      </div>
+    </div>`).join('');
 }
 
 // ===================== RECOGIDAS =====================
@@ -748,24 +766,28 @@ function renderRecogidas() {
   const plantaF = document.getElementById('filter-r-planta').value.toLowerCase();
   let data = recogidas.filter(r => (!añoF||r.año===añoF) && (!plantaF||r.planta.toLowerCase().includes(plantaF)));
   const el = document.getElementById('tabla-recogidas');
-  if(!data.length) { el.innerHTML = '<div class="empty">No hay recogidas aún</div>'; return; }
-  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>Fecha</th><th>Cantidad</th><th>Tiempo</th><th></th></tr></thead><tbody>
-    ${data.map(r=>{
-      const fechaSiembra = getFechaSiembraPlanta(r.planta, r.año);
-      const tiempo = diffLegible(fechaSiembra, r.fecha);
-      return `<tr>
-        <td><strong>${r.planta}</strong>${r.notas?`<br><span style="font-size:0.75rem;color:var(--muted)">${r.notas}</span>`:''}</td>
-        <td><span class="tag tag-${r.año}">${r.año}</span></td>
-        <td>${fmt(r.fecha)}</td>
-        <td><strong>${r.cantidad}</strong> <span style="color:var(--muted)">${r.unidad||'kg'}</span></td>
-        <td style="color:var(--muted);font-size:0.8rem;white-space:nowrap">${tiempo || '—'}</td>
-        <td style="white-space:nowrap">
+  if(!data.length) { el.innerHTML = '<div class="empty" data-icon="🧺">No hay recogidas aún</div>'; return; }
+  el.innerHTML = data.map(r=>{
+    const fechaSiembra = getFechaSiembraPlanta(r.planta, r.año);
+    const tiempo = diffLegible(fechaSiembra, r.fecha);
+    return `<div style="padding:11px 0;border-bottom:1px dashed var(--border-lt);display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:0.9rem">${r.planta}</div>
+        <div style="font-size:0.75rem;color:var(--muted);margin-top:3px">
+          📅 ${fmt(r.fecha)}${tiempo?` · ⏱ ${tiempo}`:''}
+        </div>
+        ${r.notas?`<div style="font-size:0.72rem;color:var(--muted);margin-top:2px;font-style:italic">${r.notas}</div>`:''}
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0">
+        <span style="font-size:1rem;font-weight:700;color:var(--green)">${r.cantidad} <span style="font-size:0.72rem;color:var(--muted)">${r.unidad||'kg'}</span></span>
+        <span class="tag tag-${r.año}">${r.año}</span>
+        <div style="display:flex;gap:2px">
           <button class="del-btn" onclick="editRecogida('${r.id}')" title="Editar">✏️</button>
           <button class="del-btn" onclick="delRecogida('${r.id}')" title="Eliminar">🗑</button>
-        </td>
-      </tr>`;
-    }).join('')}
-  </tbody></table>`;
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
 function renderTotales() {

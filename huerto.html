@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#5c3d1e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mi Huerto">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>🌱 Mi Huerto</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream:      #f5f0e6;
+  --cream-dk:   #ede5d4;
+  --cream-lt:   #faf7f2;
+  --brown:      #5c3d1e;
+  --brown-lt:   #8b6340;
+  --brown-xs:   #c4a882;
+  --green:      #3d6b47;
+  --green-lt:   #e8f0e9;
+  --green-mid:  #5a8c66;
+  --border:     #c9b896;
+  --border-lt:  #ddd0b8;
+  --text:       #2c1f0e;
+  --text2:      #6b4c2a;
+  --muted:      #9b7d5a;
+  --shadow:     0 2px 8px rgba(92,61,30,0.10);
+  --radius:     6px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { font-family: 'Source Sans 3', Georgia, sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; padding-bottom: 84px; -webkit-font-smoothing: antialiased; }
+/* ── LAYOUT con sidebar ── */
+.app-shell { display: flex; min-height: 100vh; }
+
+/* ── SIDEBAR ── */
+.sidebar { width: 200px; background: var(--brown); border-right: 3px solid var(--brown-lt); display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 200; transition: transform 0.25s ease; }
+.sidebar .sb-logo { padding: 20px 18px 16px; border-bottom: 1px solid rgba(255,255,255,0.12); }
+.sidebar .sb-logo h1 { font-family: 'Lora', Georgia, serif; font-size: 1.1rem; font-weight: 700; color: var(--cream); }
+.sidebar .sb-logo p { font-size: 0.68rem; color: var(--brown-xs); margin-top: 2px; font-style: italic; }
+.sidebar .sb-logo span { font-size: 1.4rem; display: block; margin-bottom: 6px; }
+.sidebar nav { flex: 1; padding: 12px 0; }
+.sidebar nav button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 11px 18px; background: none; border: none; border-left: 3px solid transparent; cursor: pointer; font-family: 'Source Sans 3', sans-serif; font-size: 0.85rem; font-weight: 500; color: var(--brown-xs); text-align: left; transition: all 0.15s; letter-spacing: 0.01em; }
+.sidebar nav button .nav-icon { font-size: 1.05rem; width: 20px; text-align: center; }
+.sidebar nav button:hover { background: rgba(255,255,255,0.07); color: var(--cream); }
+.sidebar nav button.active { background: rgba(255,255,255,0.12); color: var(--cream); border-left-color: var(--cream-dk); font-weight: 700; }
+.sidebar .sb-year { padding: 12px 18px 4px; border-top: 1px solid rgba(255,255,255,0.12); }
+.sidebar nav .sb-year { border-top: 1px solid rgba(255,255,255,0.12); margin-top: 4px; padding: 12px 18px 4px; }
+.sidebar .sb-year label { display: block; font-size: 0.62rem; color: var(--brown-xs); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 5px; }
+.sidebar .sb-year select { width: 100%; padding: 7px 10px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: var(--cream); font-family: 'Source Sans 3', sans-serif; font-size: 0.82rem; -webkit-appearance: none; }
+.sidebar .sb-date { padding: 0 18px 16px; font-size: 0.68rem; color: var(--brown-xs); font-style: italic; }
+
+/* ── MOBILE TOGGLE ── */
+.menu-toggle { display: none; position: fixed; top: 14px; left: 14px; z-index: 300; background: var(--brown); border: none; border-radius: 6px; padding: 8px 10px; cursor: pointer; font-size: 1.1rem; color: var(--cream); box-shadow: var(--shadow); }
+.overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 190; }
+.overlay.open { display: block; }
+
+/* ── MAIN CONTENT ── */
+body { padding-bottom: 0; }
+main { margin-left: 200px; padding: 24px 20px; max-width: 760px; }
+
+/* ── MOBILE ── */
+@media (max-width: 640px) {
+  .sidebar { transform: translateX(-100%); }
+  .sidebar.open { transform: translateX(0); }
+  .menu-toggle { display: block; }
+  main { margin-left: 0; padding: 14px 14px 30px; padding-top: 56px; }
+  header { display: none; }
+}
+
+/* ── HEADER (desktop only) ── */
+header { display: none; }
+.section { display: none; }
+.section.active { display: block; }
+.sec-title { font-family: 'Lora', Georgia, serif; font-size: 1.4rem; font-weight: 700; color: var(--brown); margin-bottom: 18px; margin-top: 2px; font-style: italic; }
+.sec-title::after { content: ' ✦'; font-size: 0.7em; color: var(--brown-xs); font-style: normal; }
+.card { background: var(--cream-lt); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.card-title { font-family: 'Lora', Georgia, serif; font-size: 0.88rem; font-weight: 600; color: var(--brown); margin-bottom: 14px; font-style: italic; display: flex; align-items: center; gap: 6px; }
+.card-title::before { content: '❧'; font-size: 1rem; color: var(--brown-xs); font-style: normal; }
+.stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+.stat { background: var(--cream-lt); border-radius: var(--radius); padding: 16px 14px; border: 1px solid var(--border); box-shadow: var(--shadow); }
+.stat .num { font-family: 'Lora', Georgia, serif; font-size: 2.4rem; font-weight: 700; color: var(--green); letter-spacing: -0.02em; line-height: 1; }
+.stat .lbl { font-size: 0.68rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.07em; margin-top: 4px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; padding: 11px 20px; border: none; border-radius: var(--radius); cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: all 0.15s; font-family: 'Source Sans 3', sans-serif; }
+.btn:active { transform: scale(0.97); opacity: 0.85; }
+.btn-primary { background: var(--green); color: var(--cream-lt); width: 100%; margin-top: 18px; padding: 14px; font-size: 0.95rem; border: 1px solid var(--green); letter-spacing: 0.02em; }
+.btn-primary:hover { background: #2f5438; }
+.btn-outline { background: transparent; border: 1.5px solid var(--border); color: var(--text2); width: 100%; margin-top: 10px; padding: 12px; }
+form label { display: block; font-size: 0.7rem; font-weight: 600; color: var(--muted); margin-bottom: 5px; margin-top: 14px; text-transform: uppercase; letter-spacing: 0.07em; }
+form input, form select, form textarea { width: 100%; padding: 11px 13px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.92rem; background: var(--cream); color: var(--text); font-family: 'Source Sans 3', sans-serif; -webkit-appearance: none; transition: border-color 0.15s; }
+form input:focus, form select:focus, form textarea:focus { outline: none; border-color: var(--green); background: var(--cream-lt); }
+form input::placeholder { color: var(--brown-xs); opacity: 0.6; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 3px; font-size: 0.67rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.tag-semilla  { background: #e2ede4; color: #2d5e38; border: 1px solid #b5d0ba; }
+.tag-planta   { background: #ddeae0; color: #2d5e38; border: 1px solid #b5d0ba; }
+.tag-recogida { background: #f5e8cc; color: #7a4e0a; border: 1px solid #d4b87a; }
+.tag-2024 { background: #f5e8e0; color: #8b3a1a; border: 1px solid #d4a882; }
+.tag-2025 { background: #e0e8f5; color: #1a3a8b; border: 1px solid #82a0d4; }
+.tag-2026 { background: #ece0f5; color: #5a1a8b; border: 1px solid #b082d4; }
+table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+th { font-family: 'Lora', serif; font-size: 0.72rem; font-weight: 600; color: var(--muted); font-style: italic; padding: 8px 8px 10px; text-align: left; border-bottom: 2px solid var(--border); }
+td { padding: 10px 8px; border-bottom: 1px solid var(--border-lt); vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--cream-dk); }
+.del-btn { background: none; border: none; cursor: pointer; color: var(--brown-xs); font-size: 0.95rem; padding: 4px 6px; border-radius: 4px; transition: all 0.15s; opacity: 0.5; }
+.del-btn:hover { color: #8b1a1a; opacity: 1; }
+.empty { text-align: center; color: var(--muted); padding: 30px 16px; font-size: 0.88rem; font-style: italic; font-family: 'Lora', serif; }
+.empty::before { display: block; font-size: 1.8rem; margin-bottom: 8px; content: attr(data-icon); }
+.filter-bar { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.filter-bar select, .filter-bar input { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 0.83rem; background: var(--cream); flex: 1; min-width: 100px; font-family: 'Source Sans 3', sans-serif; color: var(--text); -webkit-appearance: none; }
+.prox-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 1px dashed var(--border-lt); }
+.prox-item:last-child { border-bottom: none; }
+.prox-item .pi-name { font-weight: 600; font-size: 0.9rem; font-family: 'Lora', serif; }
+.prox-item .pi-date { font-size: 0.76rem; color: var(--muted); margin-top: 2px; font-style: italic; }
+.prox-item .pi-tag { font-size: 0.7rem; background: var(--green-lt); color: var(--green); padding: 3px 8px; border-radius: 3px; font-weight: 600; border: 1px solid #b5d0ba; }
+.chip { display: inline-flex; align-items: center; gap: 4px; background: var(--green-lt); color: var(--green); padding: 4px 10px; border-radius: 3px; font-size: 0.78rem; font-weight: 600; margin: 3px; border: 1px solid #b5d0ba; }
+.year-row { padding: 14px 0; border-bottom: 1px dashed var(--border); }
+.year-row:last-child { border-bottom: none; }
+.year-row .yr-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.year-row .yr-head strong { font-family: 'Lora', serif; font-size: 1rem; font-weight: 700; color: var(--brown); }
+.year-row .yr-stats { display: grid; grid-template-columns: repeat(4,1fr); gap: 6px; }
+.year-row .yr-stat { background: var(--cream-dk); border-radius: 4px; padding: 8px 6px; text-align: center; border: 1px solid var(--border-lt); }
+.year-row .yr-stat .n { font-family: 'Lora', serif; font-size: 1.1rem; font-weight: 700; color: var(--green); }
+.year-row .yr-stat .l { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+.wa-box { background: var(--cream-lt); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; margin-bottom: 14px; }
+.wa-box h3 { font-family: 'Lora', serif; font-size: 0.9rem; font-weight: 600; color: var(--brown); font-style: italic; margin-bottom: 10px; }
+.wa-box textarea { background: var(--cream); border: 1px solid var(--border); border-radius: var(--radius); width: 100%; padding: 11px 13px; font-size: 0.9rem; resize: none; font-family: 'Source Sans 3', sans-serif; color: var(--text); }
+.wa-box .examples { font-size: 0.75rem; color: var(--muted); margin-top: 10px; line-height: 2; font-style: italic; }
+.wa-box .examples code { background: var(--cream-dk); border-radius: 3px; padding: 1px 6px; font-size: 0.78rem; border: 1px solid var(--border); font-style: normal; font-family: monospace; }
+.parsed-preview { background: var(--cream); border-radius: var(--radius); padding: 12px 14px; margin-top: 10px; font-size: 0.84rem; display: none; border: 1px solid var(--border); }
+.parsed-preview .item { padding: 6px 0; border-bottom: 1px dashed var(--border-lt); display: flex; justify-content: space-between; align-items: center; }
+.parsed-preview .item:last-child { border-bottom: none; }
+
+/* ── WHATSAPP btn fix ── */
+.wa-box .btn-green { background: var(--green); color: var(--cream-lt); }
+</style>
+</head>
+<body>
+<button class="menu-toggle" onclick="toggleMenu()" id="menu-btn">☰</button>
+<div class="overlay" id="overlay" onclick="closeMenu()"></div>
+
+<div class="sidebar" id="sidebar">
+  <div class="sb-logo">
+    <span>🌱</span>
+    <h1>Mi Huerto</h1>
+    <p id="header-date"></p>
+  </div>
+  <nav>
+    <button class="active" onclick="showSection('resumen',this)">
+      <span class="nav-icon">📊</span> Resumen
+    </button>
+    <button onclick="showSection('semillas',this)">
+      <span class="nav-icon">🌱</span> Plantero
+    </button>
+    <button onclick="showSection('plantas',this)">
+      <span class="nav-icon">🪴</span> Plantas
+    </button>
+    <button onclick="showSection('recogida',this)">
+      <span class="nav-icon">🧺</span> Recogida
+    </button>
+    <button onclick="showSection('whatsapp',this)">
+      <span class="nav-icon">💬</span> WhatsApp
+    </button>
+    <div class="sb-year">
+      <label>Filtrar año</label>
+      <select id="filter-resumen-año" onchange="renderResumen();renderSemillas();renderPlantas();renderRecogidas();renderTotales()">
+        <option value="">Todos</option>
+        <option>2024</option>
+        <option>2025</option>
+        <option selected>2026</option>
+        <option>2027</option>
+      </select>
+    </div>
+  </nav>
+</div>
+<main>
+
+<!-- ===== RESUMEN ===== -->
+<div id="sec-resumen" class="section active">
+  <p class="sec-title">Buenos días 👋</p>
+  <div class="stat-grid">
+    <div class="stat"><div class="num" id="stat-semillas">0</div><div class="lbl">🌱 Plantero</div></div>
+    <div class="stat"><div class="num" id="stat-plantas">0</div><div class="lbl">🪴 Plantas</div></div>
+    <div class="stat"><div class="num" id="stat-kg">0</div><div class="lbl">⚖️ Total kg</div></div>
+    <div class="stat"><div class="num" id="stat-uds">0</div><div class="lbl">🔢 Total uds</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📅 Próximas recogidas</div>
+    <div id="proximas-recogidas"><div class="empty" data-icon="📅">Sin recogidas próximas</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🌿 En el huerto ahora</div>
+    <div id="en-huerto-ahora"><div class="empty" data-icon="🌿">Cargando...</div></div>
+  </div>
+  <div class="card">
+    <div class="card-title">📋 Por año</div>
+    <div id="resumen-por-año"></div>
+  </div>
+</div>
+
+<!-- ===== PLANTERO ===== -->
+<div id="sec-semillas" class="section">
+  <p class="sec-title">🌱 Plantero</p>
+  <div class="card">
+    <div class="card-title">Nueva siembra</div>
+    <form id="form-semillas" onsubmit="addSemilla(event)">
+      <label>Planta</label>
+      <input type="text" id="s-planta" list="plantas-list" placeholder="ej: Tomates" required autocomplete="off">
+      <datalist id="plantas-list"></datalist>
+      <select id="s-año" style="display:none"><option>2024</option><option>2025</option><option selected>2026</option><option>2027</option></select>
+      <label>📅 Fecha de siembra</label>
+      <input type="date" id="s-fecha" required onchange="document.getElementById('s-año').value=this.value.split('-')[0]">
+      <input type="date" id="s-fecha-trasplante" style="display:none">
+      <label>Notas</label>
+      <input type="text" id="s-notas" placeholder="ej: semillas propias, compradas...">
+      <button type="submit" class="btn btn-primary">➕ Añadir siembra</button>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-title">Historial</div>
+    <div class="filter-bar">
+      <select id="filter-s-año" onchange="renderSemillas()"><option value="">Todos los años</option><option>2024</option><option>2025</option><option>2026</option></select>
+      <input type="text" id="filter-s-planta" placeholder="Buscar planta..." oninput="renderSemillas()">
+    </div>
+    <div id="tabla-semillas"></div>
+  </div>
+</div>
+
+<!-- ===== PLANTAS ===== -->
+<div id="sec-plantas" class="section">
+  <p class="sec-title">🪴 Plantas</p>
+  <div class="card">
+    <div class="card-title">Nueva planta en huerto</div>
+    <form id="form-plantas" onsubmit="addPlanta(event)">
+      <label>Planta</label>
+      <input type="text" id="p-planta" list="plantas-list2" placeholder="ej: Calabacín" required autocomplete="off">
+      <datalist id="plantas-list2"></datalist>
+      <select id="p-año" style="display:none"><option>2024</option><option>2025</option><option selected>2026</option><option>2027</option></select>
+      <label>📅 Fecha de siembra</label>
+      <input type="date" id="p-fecha" required onchange="document.getElementById('p-año').value=this.value.split('-')[0]">
+      <input type="date" id="p-fecha-rec" style="display:none">
+      <label>Tipo</label>
+      <select id="p-tipo"><option value="semilla">Desde semilla</option><option value="planta">Planta comprada</option><option value="trasplante">Trasplante</option></select>
+      <label>Notas</label>
+      <input type="text" id="p-notas" placeholder="ej: zona sur, maceta...">
+      <button type="submit" class="btn btn-primary">➕ Añadir planta</button>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-title">Historial</div>
+    <div class="filter-bar">
+      <select id="filter-p-año" onchange="renderPlantas()"><option value="">Todos los años</option><option>2024</option><option>2025</option><option>2026</option></select>
+      <input type="text" id="filter-p-planta" placeholder="Buscar planta..." oninput="renderPlantas()">
+    </div>
+    <div id="tabla-plantas"></div>
+  </div>
+</div>
+
+<!-- ===== RECOGIDA ===== -->
+<div id="sec-recogida" class="section">
+  <p class="sec-title">🧺 Recogida</p>
+  <div class="card">
+    <div class="card-title">Nueva recogida</div>
+    <form id="form-recogida" onsubmit="addRecogida(event)">
+      <label>Planta</label>
+      <input type="text" id="r-planta" list="plantas-list3" placeholder="ej: Judías amarillas" required autocomplete="off">
+      <datalist id="plantas-list3"></datalist>
+      <select id="r-año" style="display:none"><option>2024</option><option>2025</option><option selected>2026</option><option>2027</option></select>
+      <label>📅 Fecha de recogida</label>
+      <input type="date" id="r-fecha" required onchange="document.getElementById('r-año').value=this.value.split('-')[0]">
+      <div class="row2">
+        <div><label>Cantidad</label><input type="number" id="r-cantidad" step="0.1" min="0" placeholder="ej: 2.5" required></div>
+        <div><label>Unidad</label>
+          <select id="r-unidad">
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="uds">unidades</option>
+            <option value="manojos">manojos</option>
+            <option value="litros">litros</option>
+          </select>
+        </div>
+      </div>
+      <label>Notas</label>
+      <input type="text" id="r-notas" placeholder="ej: muy buenas, pocas...">
+      <button type="submit" class="btn btn-primary">➕ Añadir recogida</button>
+    </form>
+  </div>
+  <div class="card">
+    <div class="card-title">Historial</div>
+    <div class="filter-bar">
+      <select id="filter-r-año" onchange="renderRecogidas()"><option value="">Todos los años</option><option>2024</option><option>2025</option><option>2026</option></select>
+      <input type="text" id="filter-r-planta" placeholder="Buscar planta..." oninput="renderRecogidas()">
+    </div>
+    <div id="tabla-recogidas"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">Total por planta</div>
+    <div id="tabla-totales"></div>
+  </div>
+</div>
+
+<!-- ===== WHATSAPP ===== -->
+<div id="sec-whatsapp" class="section">
+  <p class="sec-title">💬 WhatsApp</p>
+  <div class="wa-box">
+    <h3>Pega tu mensaje</h3>
+    <textarea id="wa-input" rows="4" placeholder="ej: recogida 1 calabacín, 1 kg de grosellas&#10;siembra 6 ensaladas"></textarea>
+    <div class="examples">
+      <strong>Ejemplos:</strong><br>
+      <code>recogida 2 kg judías</code>
+      <code>recogida 3 calabacines</code><br>
+      <code>siembra 6 ensaladas</code>
+      <code>planta 3 tomates</code>
+    </div>
+    <div id="parsed-preview" class="parsed-preview"></div>
+    <button class="btn btn-primary" style="margin-top:12px" onclick="parseWhatsApp()">🔍 Interpretar</button>
+    <button class="btn btn-outline" id="btn-guardar-wa" style="display:none" onclick="saveWhatsApp()">✅ Guardar todo</button>
+  </div>
+  <div class="card">
+    <div class="card-title">Cómo usar desde el móvil</div>
+    <p style="font-size:0.85rem;line-height:1.8;color:var(--text2);">
+      1. Abre esta página en tu móvil<br>
+      2. Copia tu mensaje de WhatsApp<br>
+      3. Pégalo arriba y pulsa Interpretar<br>
+      4. Revisa y pulsa Guardar
+    </p>
+  </div>
+</div>
+
+</main>
+<script>
+// ===================== DATA =====================
+const PLANTAS_CONOCIDAS = ['Fresas','Ensaladas','Pimientos','Pepinos','Calabacín','Brócoli','Col','Tomates','Espinacas','Rábanos','Zanahorias','Calabaza','Judías amarillas','Judías verdes','Hinojo','Remolacha','Maíz','Pimientos Rojos','Pimientos Padrón','Pimientos Verdes','Acelgas','Calabaza grande','Grosellas'];
+
+// Días desde plantación en huerto hasta recogida — ajustado a Luxemburgo
+const DIAS_RECOGIDA_LUX = {
+  'judías amarillas': 56, 'judías verdes': 56, 'judías': 56,
+  'pepinos': 21, 'pepino': 21,
+  'calabacín': 18, 'calabacines': 18,
+  'tomates': 105, 'tomate': 105,
+  'pimientos': 126, 'pimiento': 126, 'pimientos rojos': 126, 'pimientos verdes': 126, 'pimientos padrón': 119,
+  'ensaladas': 49, 'ensalada': 49,
+  'zanahorias': 112, 'zanahoria': 112,
+  'rábanos': 25, 'rábano': 25,
+  'remolacha': 77,
+  'hinojo': 77,
+  'acelgas': 63, 'acelga': 63,
+  'calabaza': 105, 'calabaza grande': 112,
+  'espinacas': 56, 'espinaca': 56,
+  'brócoli': 84, 'col': 84,
+  'maíz': 84,
+  'fresas': 365,
+  'grosellas': 365,
+};
+
+function getDiasEstimados(nombrePlanta) {
+  const key = nombrePlanta.toLowerCase().trim();
+  // Busca coincidencia exacta primero, luego parcial
+  if(DIAS_RECOGIDA_LUX[key]) return DIAS_RECOGIDA_LUX[key];
+  for(const k of Object.keys(DIAS_RECOGIDA_LUX)) {
+    if(key.includes(k) || k.includes(key)) return DIAS_RECOGIDA_LUX[k];
+  }
+  return null;
+}
+
+function getMediaHistorica(nombrePlanta) {
+  // Calcula tiempo medio real de mis propias recogidas
+  const recogidasPlanta = recogidas.filter(r => r.planta.toLowerCase() === nombrePlanta.toLowerCase());
+  if(!recogidasPlanta.length) return null;
+  let totalDias = 0, count = 0;
+  recogidasPlanta.forEach(r => {
+    const fs = getFechaSiembraPlanta(r.planta, r.año);
+    if(fs && r.fecha) {
+      const dias = Math.round((new Date(r.fecha) - new Date(fs)) / 86400000);
+      if(dias > 0) { totalDias += dias; count++; }
+    }
+  });
+  return count > 0 ? Math.round(totalDias / count) : null;
+}
+
+function calcFechaEstimada(nombrePlanta, fechaSiembra) {
+  if(!fechaSiembra) return '';
+  // Prioriza datos históricos propios, si no usa tabla Luxemburgo
+  const dias = getMediaHistorica(nombrePlanta) || getDiasEstimados(nombrePlanta);
+  if(!dias) return '';
+  const fecha = new Date(fechaSiembra);
+  fecha.setDate(fecha.getDate() + dias);
+  return fecha.toISOString().split('T')[0];
+}
+
+const DATOS_INICIALES = {
+  semillas: [
+    {id:'s1',año:'2025',planta:'Ensaladas',fecha:'2025-05-06',fechaTrasplante:'',notas:''},
+    {id:'s2',año:'2025',planta:'Maíz',fecha:'2025-05-06',fechaTrasplante:'',notas:''},
+    {id:'s3',año:'2025',planta:'Tomates',fecha:'2025-05-06',fechaTrasplante:'',notas:''},
+    {id:'s4',año:'2025',planta:'Pimientos R,V,A',fecha:'2025-04-15',fechaTrasplante:'',notas:''},
+    {id:'s5',año:'2026',planta:'Pepinos',fecha:'2026-05-15',fechaTrasplante:'2026-05-30',notas:'semillas'},
+    {id:'s6',año:'2026',planta:'Acelgas',fecha:'2026-05-15',fechaTrasplante:'2026-06-25',notas:'semillas'},
+    {id:'s7',año:'2026',planta:'Calabazas',fecha:'2026-05-15',fechaTrasplante:'2026-06-06',notas:'semillas'},
+    {id:'s8',año:'2026',planta:'Pepinos',fecha:'2026-05-20',fechaTrasplante:'2026-05-30',notas:''},
+  ],
+  plantas: [
+    {id:'p1',año:'2024',planta:'Fresas',fecha:'',fechaRec:'2025-06-06',tipo:'planta',notas:''},
+    {id:'p2',año:'2024',planta:'Ensaladas',fecha:'2024-05-15',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p3',año:'2024',planta:'Pimientos',fecha:'2024-05-15',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p4',año:'2024',planta:'Pepinos',fecha:'2024-05-15',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p5',año:'2024',planta:'Calabacín',fecha:'2024-05-15',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p6',año:'2024',planta:'Brócoli/Col',fecha:'2024-07-21',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p7',año:'2024',planta:'Tomates',fecha:'2024-05-22',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p8',año:'2024',planta:'Espinacas',fecha:'2024-07-24',fechaRec:'2025-05-19',tipo:'semilla',notas:''},
+    {id:'p9',año:'2024',planta:'Rábanos',fecha:'2025-04-29',fechaRec:'2025-05-09',tipo:'semilla',notas:''},
+    {id:'p10',año:'2025',planta:'Zanahorias',fecha:'2025-04-29',fechaRec:'2025-08-01',tipo:'semilla',notas:''},
+    {id:'p11',año:'2024',planta:'Calabaza',fecha:'2024-05-22',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p12',año:'2025',planta:'Ensaladas',fecha:'2025-04-13',fechaRec:'2025-05-30',tipo:'planta',notas:''},
+    {id:'p13',año:'2025',planta:'Pimientos Rojos',fecha:'2025-05-12',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p14',año:'2025',planta:'Pimientos Padrón',fecha:'2025-05-12',fechaRec:'2025-08-01',tipo:'planta',notas:''},
+    {id:'p15',año:'2025',planta:'Pimientos Verdes',fecha:'2025-05-19',fechaRec:'2025-08-01',tipo:'planta',notas:''},
+    {id:'p16',año:'2025',planta:'Judías amarillas',fecha:'2025-04-27',fechaRec:'2025-06-01',tipo:'semilla',notas:''},
+    {id:'p17',año:'2025',planta:'Judías verdes',fecha:'',fechaRec:'',tipo:'semilla',notas:''},
+    {id:'p18',año:'2025',planta:'Pepinos',fecha:'2025-05-31',fechaRec:'2025-06-05',tipo:'semilla',notas:'1 semana diferencia'},
+    {id:'p19',año:'2025',planta:'Calabacines',fecha:'2025-05-31',fechaRec:'2025-06-05',tipo:'semilla',notas:'1 semana diferencia'},
+    {id:'p20',año:'2025',planta:'Calabaza grande',fecha:'',fechaRec:'2026-06-18',tipo:'planta',notas:''},
+    {id:'p21',año:'2025',planta:'Ensaladas (fresas)',fecha:'2025-05-31',fechaRec:'2025-07-18',tipo:'planta',notas:'donde las fresas'},
+    {id:'p22',año:'2025',planta:'Hinojo',fecha:'2025-04-01',fechaRec:'2025-06-01',tipo:'semilla',notas:'2 meses'},
+    {id:'p23',año:'2025',planta:'Remolacha',fecha:'2025-04-01',fechaRec:'2025-06-01',tipo:'semilla',notas:'2 meses'},
+    {id:'p24',año:'2025',planta:'Judías amarillas',fecha:'2025-06-11',fechaRec:'2025-08-10',tipo:'semilla',notas:'2ª siembra'},
+    {id:'p25',año:'2026',planta:'Tomates',fecha:'2026-05-23',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p26',año:'2026',planta:'Rábanos',fecha:'2026-05-20',fechaRec:'2026-06-15',tipo:'semilla',notas:''},
+    {id:'p27',año:'2026',planta:'Zanahorias',fecha:'2026-05-20',fechaRec:'',tipo:'semilla',notas:''},
+    {id:'p28',año:'2026',planta:'Pepinos',fecha:'2026-05-28',fechaRec:'',tipo:'semilla',notas:''},
+    {id:'p29',año:'2026',planta:'Acelgas',fecha:'2026-04-19',fechaRec:'2026-05-30',tipo:'planta',notas:'planta'},
+    {id:'p30',año:'2026',planta:'Calabacín',fecha:'2026-05-23',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p31',año:'2026',planta:'Calabaza',fecha:'2026-05-23',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p32',año:'2026',planta:'Ensaladas',fecha:'2026-05-15',fechaRec:'',tipo:'planta',notas:''},
+    {id:'p33',año:'2026',planta:'Ensaladas',fecha:'2026-05-30',fechaRec:'',tipo:'planta',notas:'2ª tanda'},
+    {id:'p34',año:'2026',planta:'Calabazas',fecha:'2026-06-06',fechaRec:'',tipo:'trasplante',notas:'trasplante semillero'},
+    {id:'p35',año:'2026',planta:'Acelgas',fecha:'2026-06-25',fechaRec:'',tipo:'trasplante',notas:'trasplante semillero'},
+    {id:'p36',año:'2026',planta:'Pepinos',fecha:'2026-05-30',fechaRec:'',tipo:'trasplante',notas:'trasplante semillero'},
+    {id:'p37',año:'2026',planta:'Pimiento comprado',fecha:'2026-05-31',fechaRec:'',tipo:'planta',notas:'comprado'},
+  ],
+  recogidas: [
+    {id:'r1',año:'2025',planta:'Judías amarillas',fecha:'2025-06-01',cantidad:6,unidad:'kg',notas:''},
+    {id:'r2',año:'2025',planta:'Pepinos',fecha:'2025-06-05',cantidad:11,unidad:'uds',notas:''},
+  ]
+};
+
+// ===================== STORAGE =====================
+function loadData(key, fallback) {
+  try { const d = localStorage.getItem('huerto_'+key); return d ? JSON.parse(d) : JSON.parse(JSON.stringify(fallback)); }
+  catch(e) { return JSON.parse(JSON.stringify(fallback)); }
+}
+function saveData(key, data) { localStorage.setItem('huerto_'+key, JSON.stringify(data)); }
+
+let semillas = loadData('semillas', DATOS_INICIALES.semillas);
+let plantas  = loadData('plantas',  DATOS_INICIALES.plantas);
+let recogidas= loadData('recogidas',DATOS_INICIALES.recogidas);
+
+// ===================== NAV =====================
+function showSection(id, btn) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.sidebar nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('sec-'+id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  closeMenu();
+  // Sincronizar selectores locales con el filtro global
+  const globalAño = document.getElementById('filter-resumen-año').value;
+  ['filter-s-año','filter-p-año','filter-r-año'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el && globalAño) el.value = globalAño;
+  });
+  renderResumen(); renderSemillas(); renderPlantas(); renderRecogidas(); renderTotales();
+}
+
+// ===================== UTILS =====================
+function uid() { return '_'+Math.random().toString(36).substr(2,9); }
+function fmt(d) { if(!d) return '—'; const [y,m,dd] = d.split('-'); return dd+'/'+m+'/'+y; }
+function today() { return new Date().toISOString().split('T')[0]; }
+
+function diffLegible(fechaSiembra, fechaRecogida) {
+  if(!fechaSiembra || !fechaRecogida) return null;
+  const d1 = new Date(fechaSiembra);
+  const d2 = new Date(fechaRecogida);
+  const dias = Math.round((d2 - d1) / (1000*60*60*24));
+  if(dias < 0) return null;
+  if(dias < 7)  return dias + (dias===1?' día':' días');
+  const semanas = dias / 7;
+  if(dias < 30) {
+    const s = Math.floor(semanas);
+    const resto = semanas - s;
+    if(resto < 0.3)       return s + (s===1?' semana':' semanas');
+    else if(resto < 0.7)  return s + ' sem. y media';
+    else                  return (s+1) + (s+1===1?' semana':' semanas');
+  }
+  const meses = dias / 30.5;
+  const m = Math.floor(meses);
+  const resto = meses - m;
+  if(resto < 0.3)      return m + (m===1?' mes':' meses');
+  else if(resto < 0.7) return m + (m===1?' mes':' meses') + ' y medio';
+  else                 return (m+1) + ' meses';
+}
+
+function getFechaSiembraPlanta(plantaNombre, año) {
+  // Busca primero en plantas, luego en semillas
+  const p = plantas.find(p => p.planta === plantaNombre && p.año === año && p.fecha);
+  if(p) return p.fecha;
+  const s = semillas.find(s => s.planta === plantaNombre && s.año === año && s.fecha);
+  if(s) return s.fecha;
+  return null;
+}
+function updateDataLists() {
+  const names = [...new Set([...PLANTAS_CONOCIDAS, ...plantas.map(p=>p.planta), ...semillas.map(s=>s.planta)])].sort();
+  ['plantas-list','plantas-list2','plantas-list3'].forEach(id => {
+    const el = document.getElementById(id); if(!el) return;
+    el.innerHTML = names.map(n=>`<option value="${n}">`).join('');
+  });
+}
+
+// ===================== SEMILLAS =====================
+function addSemilla(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-primary');
+  const editId = btn.dataset.editId;
+  const obj = {
+    id: editId || uid(),
+    año: (document.getElementById('s-fecha').value || '').split('-')[0] || document.getElementById('s-año').value,
+    planta: document.getElementById('s-planta').value.trim(),
+    fecha: document.getElementById('s-fecha').value,
+    fechaTrasplante: document.getElementById('s-fecha-trasplante').value,
+    notas: document.getElementById('s-notas').value.trim()
+  };
+  if(editId) {
+    const idx = semillas.findIndex(s=>s.id===editId);
+    if(idx>-1) semillas[idx] = obj;
+    delete btn.dataset.editId;
+    btn.textContent = '➕ Añadir siembra';
+    // Ocultar campo trasplante al terminar edición
+    document.getElementById('s-fecha-trasplante').style.display = 'none';
+    const lbl = document.getElementById('s-label-trasplante');
+    if(lbl) lbl.style.display = 'none';
+  } else {
+    semillas.unshift(obj);
+  }
+  saveData('semillas', semillas);
+  e.target.reset();
+  document.getElementById('s-fecha').value = today();
+  // Si tiene fecha de trasplante, crear/actualizar entrada en Plantas automáticamente
+  if(obj.fechaTrasplante) {
+    const yaExiste = plantas.find(p => p.planta === obj.planta && p.año === obj.año && p.tipo === 'trasplante');
+    if(!yaExiste) {
+      plantas.unshift({
+        id: uid(),
+        año: obj.año,
+        planta: obj.planta,
+        fecha: obj.fechaTrasplante,
+        fechaRec: calcFechaEstimada(obj.planta, obj.fechaTrasplante),
+        fechaRecAuto: true,
+        tipo: 'trasplante',
+        notas: 'Del plantero'
+      });
+      saveData('plantas', plantas);
+    } else {
+      // Actualizar fecha si ya existía
+      yaExiste.fecha = obj.fechaTrasplante;
+      saveData('plantas', plantas);
+    }
+  }
+  renderSemillas(); renderPlantas(); renderResumen(); updateDataLists();
+}
+
+function editSemilla(id) {
+  const s = semillas.find(s=>s.id===id);
+  if(!s) return;
+  document.getElementById('s-planta').value           = s.planta;
+  document.getElementById('s-año').value              = s.año;
+  document.getElementById('s-fecha').value            = s.fecha;
+  document.getElementById('s-fecha-trasplante').value = s.fechaTrasplante||'';
+  document.getElementById('s-notas').value            = s.notas||'';
+  // Mostrar campo de trasplante al editar
+  const campoTrasplante = document.getElementById('s-fecha-trasplante');
+  campoTrasplante.style.display = 'block';
+  if(!document.getElementById('s-label-trasplante')) {
+    const lbl = document.createElement('label');
+    lbl.id = 's-label-trasplante';
+    lbl.textContent = '🔄 Fecha de trasplante al huerto';
+    campoTrasplante.parentNode.insertBefore(lbl, campoTrasplante);
+  }
+  document.getElementById('s-label-trasplante').style.display = 'block';
+  const btn = document.querySelector('#form-semillas .btn-primary');
+  btn.textContent = '💾 Guardar cambios';
+  btn.dataset.editId = id;
+  document.getElementById('form-semillas').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function delSemilla(id) { if(!confirm('¿Eliminar?')) return; semillas = semillas.filter(s=>s.id!==id); saveData('semillas',semillas); renderSemillas(); renderResumen(); }
+
+function renderSemillas() {
+  const añoF = document.getElementById('filter-resumen-año').value || document.getElementById('filter-s-año').value;
+  const plantaF = document.getElementById('filter-s-planta').value.toLowerCase();
+  let data = semillas.filter(s => (!añoF||s.año===añoF) && (!plantaF||s.planta.toLowerCase().includes(plantaF)));
+  const el = document.getElementById('tabla-semillas');
+  if(!data.length) { el.innerHTML = '<div class="empty">No hay registros</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>🌱 Siembra</th><th>🔄 Trasplante</th><th>Notas</th><th></th></tr></thead><tbody>
+    ${data.map(s=>`<tr>
+      <td><strong>${s.planta}</strong></td>
+      <td><span class="tag tag-${s.año}">${s.año}</span></td>
+      <td>${fmt(s.fecha)}</td>
+      <td>${fmt(s.fechaTrasplante||'')}</td>
+      <td style="color:#74b994;font-size:0.8rem">${s.notas||'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="del-btn" onclick="editSemilla('${s.id}')" title="Editar">✏️</button>
+        <button class="del-btn" onclick="delSemilla('${s.id}')" title="Eliminar">🗑</button>
+      </td>
+    </tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ===================== PLANTAS =====================
+function addPlanta(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-primary');
+  const editId = btn.dataset.editId;
+  const obj = { id: editId || uid(), año: (document.getElementById('p-fecha').value||'').split('-')[0] || document.getElementById('p-año').value, planta: document.getElementById('p-planta').value.trim(), fecha: document.getElementById('p-fecha').value, fechaRec: document.getElementById('p-fecha-rec').value, tipo: document.getElementById('p-tipo').value, notas: document.getElementById('p-notas').value.trim() };
+  // Si no tiene fecha de recogida, calcularla automáticamente
+  if(!obj.fechaRec && obj.fecha) {
+    obj.fechaRec = calcFechaEstimada(obj.planta, obj.fecha);
+    obj.fechaRecAuto = true;
+  }
+  if(editId) {
+    const idx = plantas.findIndex(p=>p.id===editId);
+    if(idx>-1) plantas[idx] = obj;
+    delete btn.dataset.editId;
+    btn.textContent = '➕ Añadir planta';
+  } else {
+    plantas.unshift(obj);
+  }
+  saveData('plantas', plantas);
+  e.target.reset(); document.getElementById('p-fecha').value = today();
+  renderPlantas(); renderResumen(); updateDataLists();
+}
+
+function editPlanta(id) {
+  const p = plantas.find(p=>p.id===id);
+  if(!p) return;
+  document.getElementById('p-planta').value   = p.planta;
+  document.getElementById('p-año').value      = p.año;
+  document.getElementById('p-fecha').value    = p.fecha;
+  document.getElementById('p-fecha-rec').value= p.fechaRec||'';
+  document.getElementById('p-tipo').value     = p.tipo||'planta';
+  document.getElementById('p-notas').value    = p.notas||'';
+  const btn = document.querySelector('#form-plantas .btn-primary');
+  btn.textContent = '💾 Guardar cambios';
+  btn.dataset.editId = id;
+  document.getElementById('form-plantas').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function delPlanta(id) { if(!confirm('¿Eliminar?')) return; plantas = plantas.filter(p=>p.id!==id); saveData('plantas',plantas); renderPlantas(); renderResumen(); }
+function renderPlantas() {
+  const añoF = document.getElementById('filter-resumen-año').value || document.getElementById('filter-p-año').value;
+  const plantaF = document.getElementById('filter-p-planta').value.toLowerCase();
+  let data = plantas.filter(p => (!añoF||p.año===añoF) && (!plantaF||p.planta.toLowerCase().includes(plantaF)));
+  const el = document.getElementById('tabla-plantas');
+  if(!data.length) { el.innerHTML = '<div class="empty">No hay registros</div>'; return; }
+  const tipoLabel = {semilla:'🌱',planta:'🪴',trasplante:'🔄'};
+  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>Siembra</th><th>Rec. est.</th><th>Tipo</th><th></th></tr></thead><tbody>
+    ${data.map(p=>`<tr><td><strong>${p.planta}</strong>${p.notas?`<br><span style="font-size:0.75rem;color:var(--muted)">${p.notas}</span>`:''}</td><td><span class="tag tag-${p.año}">${p.año}</span></td><td>${fmt(p.fecha)}</td><td>${p.fechaRec ? `${fmt(p.fechaRec)}${p.fechaRecAuto?` <span style="font-size:0.65rem;color:var(--muted);font-style:italic">est.</span>`:''}` : '—'}</td><td>${tipoLabel[p.tipo]||'🪴'}</td><td style="white-space:nowrap"><button class="del-btn" onclick="editPlanta('${p.id}')" title="Editar">✏️</button><button class="del-btn" onclick="delPlanta('${p.id}')" title="Eliminar">🗑</button></td></tr>`).join('')}
+  </tbody></table>`;
+}
+
+// ===================== RECOGIDAS =====================
+function delRecogida(id) { if(!confirm('¿Eliminar?')) return; recogidas = recogidas.filter(r=>r.id!==id); saveData('recogidas',recogidas); renderRecogidas(); renderTotales(); renderResumen(); }
+
+function editRecogida(id) {
+  const r = recogidas.find(r=>r.id===id);
+  if(!r) return;
+  document.getElementById('r-planta').value   = r.planta;
+  document.getElementById('r-año').value      = r.año;
+  document.getElementById('r-fecha').value    = r.fecha;
+  document.getElementById('r-cantidad').value = r.cantidad||'';
+  document.getElementById('r-unidad').value   = r.unidad||'kg';
+  document.getElementById('r-notas').value    = r.notas||'';
+  const btn = document.querySelector('#form-recogida .btn-primary');
+  btn.textContent = '💾 Guardar cambios';
+  btn.dataset.editId = id;
+  document.getElementById('form-recogida').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+function addRecogida(e) {
+  e.preventDefault();
+  const btn = e.target.querySelector('.btn-primary');
+  const editId = btn.dataset.editId;
+  const obj = {
+    id: editId || uid(),
+    año: (document.getElementById('r-fecha').value||'').split('-')[0] || document.getElementById('r-año').value,
+    planta: document.getElementById('r-planta').value.trim(),
+    fecha: document.getElementById('r-fecha').value,
+    cantidad: parseFloat(document.getElementById('r-cantidad').value)||0,
+    unidad: document.getElementById('r-unidad').value,
+    notas: document.getElementById('r-notas').value.trim()
+  };
+  if(editId) {
+    const idx = recogidas.findIndex(r=>r.id===editId);
+    if(idx>-1) recogidas[idx] = obj;
+    delete btn.dataset.editId;
+    btn.textContent = '➕ Añadir recogida';
+  } else {
+    recogidas.unshift(obj);
+  }
+  saveData('recogidas', recogidas);
+  e.target.reset();
+  document.getElementById('r-fecha').value = today();
+  renderRecogidas(); renderTotales(); renderResumen(); updateDataLists();
+}
+
+function renderRecogidas() {
+  const añoF = document.getElementById('filter-resumen-año').value || document.getElementById('filter-r-año').value;
+  const plantaF = document.getElementById('filter-r-planta').value.toLowerCase();
+  let data = recogidas.filter(r => (!añoF||r.año===añoF) && (!plantaF||r.planta.toLowerCase().includes(plantaF)));
+  const el = document.getElementById('tabla-recogidas');
+  if(!data.length) { el.innerHTML = '<div class="empty">No hay recogidas aún</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>Fecha</th><th>Cantidad</th><th>Tiempo</th><th></th></tr></thead><tbody>
+    ${data.map(r=>{
+      const fechaSiembra = getFechaSiembraPlanta(r.planta, r.año);
+      const tiempo = diffLegible(fechaSiembra, r.fecha);
+      return `<tr>
+        <td><strong>${r.planta}</strong>${r.notas?`<br><span style="font-size:0.75rem;color:var(--muted)">${r.notas}</span>`:''}</td>
+        <td><span class="tag tag-${r.año}">${r.año}</span></td>
+        <td>${fmt(r.fecha)}</td>
+        <td><strong>${r.cantidad}</strong> <span style="color:var(--muted)">${r.unidad||'kg'}</span></td>
+        <td style="color:var(--muted);font-size:0.8rem;white-space:nowrap">${tiempo || '—'}</td>
+        <td style="white-space:nowrap">
+          <button class="del-btn" onclick="editRecogida('${r.id}')" title="Editar">✏️</button>
+          <button class="del-btn" onclick="delRecogida('${r.id}')" title="Eliminar">🗑</button>
+        </td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
+function renderTotales() {
+  const totales = {};
+  recogidas.forEach(r => {
+    const k = r.planta + '|' + r.año + '|' + (r.unidad||'kg');
+    if(!totales[k]) totales[k] = {planta:r.planta, año:r.año, unidad:r.unidad||'kg', total:0, veces:0, diasTotal:0, diasCount:0};
+    totales[k].total += parseFloat(r.cantidad)||0;
+    totales[k].veces++;
+    const fs = getFechaSiembraPlanta(r.planta, r.año);
+    if(fs && r.fecha) {
+      const dias = Math.round((new Date(r.fecha) - new Date(fs)) / (1000*60*60*24));
+      if(dias > 0) { totales[k].diasTotal += dias; totales[k].diasCount++; }
+    }
+  });
+  const el = document.getElementById('tabla-totales');
+  const items = Object.values(totales).sort((a,b) => b.año.localeCompare(a.año) || b.total - a.total);
+  if(!items.length) { el.innerHTML = '<div class="empty">Sin datos todavía</div>'; return; }
+  el.innerHTML = `<table><thead><tr><th>Planta</th><th>Año</th><th>Veces</th><th>Total</th><th>Tiempo medio</th></tr></thead><tbody>
+    ${items.map(v=>{
+      const mediaDias = v.diasCount > 0 ? Math.round(v.diasTotal / v.diasCount) : null;
+      const tiempoMedio = mediaDias ? diffLegible(new Date(0), new Date(mediaDias * 86400000)) : '—';
+      return `<tr>
+        <td><strong>${v.planta}</strong></td>
+        <td><span class="tag tag-${v.año}">${v.año}</span></td>
+        <td>${v.veces}</td>
+        <td><strong>${v.total % 1 === 0 ? v.total : v.total.toFixed(1)}</strong> <span style="color:var(--muted)">${v.unidad}</span></td>
+        <td style="color:var(--muted);font-size:0.8rem">${tiempoMedio}</td>
+      </tr>`;
+    }).join('')}
+  </tbody></table>`;
+}
+
+// ===================== RESUMEN =====================
+function getAnoFiltro(localId) {
+  const global = document.getElementById('filter-resumen-año').value;
+  if(global) return global;
+  const local = document.getElementById(localId);
+  return local ? local.value : '';
+}
+function renderResumen() {
+  const añoF = document.getElementById('filter-resumen-año') ? document.getElementById('filter-resumen-año').value : '';
+
+  const semF    = añoF ? semillas.filter(s=>s.año===añoF)  : semillas;
+  const plantF  = añoF ? plantas.filter(p=>p.año===añoF)   : plantas;
+  const recF    = añoF ? recogidas.filter(r=>r.año===añoF) : recogidas;
+
+  document.getElementById('stat-semillas').textContent  = semF.length;
+  document.getElementById('stat-plantas').textContent   = plantF.length;
+  const totalKg  = recF.filter(r=>(r.unidad||'kg')==='kg').reduce((a,r)=>a+(parseFloat(r.cantidad)||0),0);
+  const totalUds = recF.filter(r=>r.unidad==='uds').reduce((a,r)=>a+(parseFloat(r.cantidad)||0),0);
+  document.getElementById('stat-kg').textContent  = totalKg  > 0 ? totalKg.toFixed(1)  : '0';
+  document.getElementById('stat-uds').textContent = totalUds > 0 ? Math.round(totalUds) : '0';
+
+  // Próximas recogidas
+  const hoy = today();
+  const proximas = plantF.filter(p => p.fechaRec && p.fechaRec >= hoy).sort((a,b)=>a.fechaRec.localeCompare(b.fechaRec)).slice(0,5);
+  const pelRec = document.getElementById('proximas-recogidas');
+  if(!proximas.length) { pelRec.innerHTML = '<div class="empty" data-icon="📅">Sin recogidas próximas estimadas</div>'; }
+  else {
+    pelRec.innerHTML = proximas.map(p=>{
+      const diasQ = Math.round((new Date(p.fechaRec) - new Date(hoy)) / 86400000);
+      const cuanto = diasQ === 0 ? '¡Hoy!' : diasQ === 1 ? 'Mañana' : diasQ < 7 ? `En ${diasQ} días` : diasQ < 14 ? 'En ~1 semana' : diasQ < 21 ? 'En ~2 semanas' : diasQ < 35 ? 'En ~3 semanas' : `En ~${Math.round(diasQ/30)} mes${Math.round(diasQ/30)>1?'es':''}`;
+      const urgente = diasQ <= 3;
+      return `<div class="prox-item">
+        <div>
+          <div class="pi-name">${p.planta}</div>
+          <div class="pi-date">📅 ${fmt(p.fechaRec)}${p.fechaRecAuto?' <span style="font-size:0.65rem;opacity:0.7">est.</span>':''}</div>
+        </div>
+        <span class="pi-tag" style="${urgente?'background:#fef0e8;color:#b94520;border-color:#d4a882':''}">${cuanto}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // En el huerto ahora
+  const enHuerto = plantF.filter(p => {
+    if(!p.fecha) return false;
+    if(p.fecha > hoy) return false;
+    // Si tiene fecha de recogida estimada, solo mostrar si aún no ha pasado
+    if(p.fechaRec && p.fechaRec < hoy) return false;
+    // Solo plantas del último año para no mostrar todo lo histórico
+    const fechaLimite = new Date(hoy);
+    fechaLimite.setFullYear(fechaLimite.getFullYear() - 1);
+    const limite = fechaLimite.toISOString().split('T')[0];
+    return p.fecha >= limite;
+  });
+  // Quitar duplicados por nombre de planta
+  const vistos = new Set();
+  const enHuertoUnicos = enHuerto.filter(p => {
+    if(vistos.has(p.planta)) return false;
+    vistos.add(p.planta); return true;
+  });
+  const elEH = document.getElementById('en-huerto-ahora');
+  if(!enHuertoUnicos.length) { elEH.innerHTML = '<div class="empty" data-icon="🌿">Sin datos suficientes</div>'; }
+  else {
+    elEH.innerHTML = `<div style="display:flex;flex-wrap:wrap;margin:-3px">
+      ${enHuertoUnicos.map(p=>`<span class="chip">🌿 ${p.planta}</span>`).join('')}
+    </div>`;
+  }
+
+  // Resumen por año
+  const años = [...new Set([...semillas.map(s=>s.año), ...plantas.map(p=>p.año), ...recogidas.map(r=>r.año)])].sort().reverse();
+  const elRA = document.getElementById('resumen-por-año');
+  if(!años.length) { elRA.innerHTML = '<div class="empty" data-icon="📋">Sin datos</div>'; return; }
+  elRA.innerHTML = años.map(a => {
+    const sA = semillas.filter(s=>s.año===a).length;
+    const pA = plantas.filter(p=>p.año===a).length;
+    const rA = recogidas.filter(r=>r.año===a);
+    const kgA  = rA.filter(r=>(r.unidad||'kg')==='kg').reduce((acc,r)=>acc+(parseFloat(r.cantidad)||0),0);
+    const udsA = rA.filter(r=>r.unidad==='uds').reduce((acc,r)=>acc+(parseFloat(r.cantidad)||0),0);
+    return `<div class="year-row">
+      <div class="yr-head"><strong>${a}</strong><span class="tag tag-${a}">${a}</span></div>
+      <div class="yr-stats">
+        <div class="yr-stat"><div class="n">${sA}</div><div class="l">Semillas</div></div>
+        <div class="yr-stat"><div class="n">${pA}</div><div class="l">Plantas</div></div>
+        <div class="yr-stat"><div class="n">${kgA>0?kgA.toFixed(1)+'kg':'—'}</div><div class="l">Peso</div></div>
+        <div class="yr-stat"><div class="n">${udsA>0?Math.round(udsA)+'u':'—'}</div><div class="l">Uds</div></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ===================== WHATSAPP PARSER =====================
+let parsedItems = [];
+function parseWhatsApp() {
+  const text = document.getElementById('wa-input').value.trim().toLowerCase();
+  parsedItems = [];
+  const lines = text.split(/[,\n]+/).map(l=>l.trim()).filter(Boolean);
+  lines.forEach(line => {
+    if(line.match(/^(recogida|recojo|cosech)/)) {
+      const rest = line.replace(/^(recogida|recojo|cosech[a-z]*)\s*/,'');
+      const kgMatch = rest.match(/(\d+[\.,]?\d*)\s*kg/);
+      const numMatch = rest.match(/^(\d+)\s+(.+)/);
+      const plantaMatch = rest.match(/\d+[\.,]?\d*\s*kg\s*(?:de\s*)?(.+)/i) || rest.match(/^(?:\d+\s+)?(.+)/);
+      const planta = plantaMatch ? plantaMatch[1].replace(/\s*\d+[\.,]?\d*\s*kg.*/,'').trim() : rest;
+      const kg = kgMatch ? parseFloat(kgMatch[1].replace(',','.')) : (numMatch ? 0 : 0);
+      const cantidad = kgMatch ? kgMatch[1]+' kg' : (numMatch ? numMatch[1] : '1');
+      parsedItems.push({tipo:'recogida', planta: capitalize(planta.replace(/^de\s*/,'')), cantidad, kg});
+    } else if(line.match(/^(siembra|siembre|siembro|semill)/)) {
+      const rest = line.replace(/^(siembra|siembre|siembro|semilla[s]?)\s*/,'');
+      const numMatch = rest.match(/^(\d+)\s+(.+)/);
+      const planta = numMatch ? numMatch[2] : rest;
+      parsedItems.push({tipo:'semilla', planta: capitalize(planta), cantidad: numMatch?numMatch[1]:'1'});
+    } else if(line.match(/^(planta|trasplant)/)) {
+      const rest = line.replace(/^(planta[s]?|trasplant[a-z]*)\s*/,'');
+      const numMatch = rest.match(/^(\d+)\s+(.+)/);
+      const planta = numMatch ? numMatch[2] : rest;
+      parsedItems.push({tipo:'planta', planta: capitalize(planta.replace(/\s*en\s*huerto.*/,'')), cantidad: numMatch?numMatch[1]:'1'});
+    }
+  });
+  const preview = document.getElementById('parsed-preview');
+  const btn = document.getElementById('btn-guardar-wa');
+  if(!parsedItems.length) { preview.style.display='block'; preview.innerHTML='<span style="color:#e63946">No se pudo interpretar el mensaje. Prueba con: "recogida 2 kg judías" o "siembra 6 ensaladas"</span>'; btn.style.display='none'; return; }
+  preview.style.display='block';
+  preview.innerHTML = `<strong style="color:#2d6a4f">Encontrado (${parsedItems.length}):</strong>`+
+    parsedItems.map(i=>{
+      const emoji = i.tipo==='recogida'?'🧺':i.tipo==='semilla'?'🌱':'🪴';
+      const label = i.tipo==='recogida'?'Recogida':'Siembra';
+      return `<div class="item"><span>${emoji} <strong>${i.planta}</strong> — ${i.cantidad||''}</span><span class="tag tag-${i.tipo==='recogida'?'recogida':i.tipo==='semilla'?'semilla':'planta'}">${label}</span></div>`;
+    }).join('');
+  btn.style.display='block';
+}
+function saveWhatsApp() {
+  const t = today();
+  parsedItems.forEach(item => {
+    if(item.tipo==='recogida') {
+      recogidas.unshift({id:uid(),año:new Date().getFullYear().toString(),planta:item.planta,fecha:t,cantidad:item.cantidad,kg:item.kg,notas:'vía WhatsApp'});
+      saveData('recogidas',recogidas);
+    } else if(item.tipo==='semilla') {
+      semillas.unshift({id:uid(),año:new Date().getFullYear().toString(),planta:item.planta,fecha:t,notas:'vía WhatsApp'});
+      saveData('semillas',semillas);
+    } else {
+      plantas.unshift({id:uid(),año:new Date().getFullYear().toString(),planta:item.planta,fecha:t,fechaRec:'',tipo:'planta',notas:'vía WhatsApp'});
+      saveData('plantas',plantas);
+    }
+  });
+  document.getElementById('wa-input').value='';
+  document.getElementById('parsed-preview').style.display='none';
+  document.getElementById('btn-guardar-wa').style.display='none';
+  parsedItems=[];
+  alert('✅ '+parsedItems.length+' registros guardados');
+  renderResumen();
+  updateDataLists();
+}
+function capitalize(s) { return s ? s.charAt(0).toUpperCase()+s.slice(1) : s; }
+
+// ===================== INIT =====================
+document.addEventListener('DOMContentLoaded', () => {
+  const now = new Date();
+  document.getElementById('header-date').textContent = now.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  document.getElementById('s-fecha').value = today();
+  document.getElementById('p-fecha').value = today();
+  document.getElementById('r-fecha').value = today();
+  updateDataLists();
+  renderResumen();
+});
+
+// ===================== SERVICE WORKER =====================
+if('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js').catch(e => console.log('SW error:', e));
+  });
+}
+</script>
+</body>
+</html>
